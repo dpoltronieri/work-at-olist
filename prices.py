@@ -45,17 +45,30 @@ class ChargeManager(IChargeManager):
         finalTimeTuple = time.gmtime(finalTimestamp)
 
         def reducedTariff(gmt):
+            # The first part is inclusive because it will use the remainder of the hour,
+            # the second part is exclusive to stop at the end of the previous hour
             # ["tm_hour"] is the same as [3]
             return True if (gmt[3] >= self.__reducedTariffStart or gmt[3] < self.__reducedTariffEnd) else False
 
+        def truncate2Digits(x):
+            return int(x * 100) / 100
+
         if not (reducedTariff(initialTimeTuple) or reducedTariff(finalTimeTuple)):
-            print("normal call")
-        else:
+            # pay for the entire call
+            callMinutes = int((finalTimestamp - initialTimestamp) / 60)
+        elif (reducedTariff(initialTimeTuple) and reducedTariff(finalTimeTuple)):
+            # Completely free minutes
+            callMinutes = 0
+        elif (reducedTariff(initialTimeTuple))
+            pass
+
             print("Special call")
 
+        return truncate2Digits(self.__standingCharge + callMinutes * self.__minuteCharge)
 
-test = ChargeManager(0, 0, 23, 6)
-test.getCharge(time.time(), time.time())
+
+test = ChargeManager(0.36, 0.09, 23, 6)
+print(test.getCharge(time.time(), time.time() + 80))
 
 localtime = time.gmtime(time.time())
 print("Local current time :", localtime)
