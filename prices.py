@@ -53,6 +53,7 @@ class ChargeManager(IChargeManager):
         def truncate2Digits(x):
             return int(x * 100) / 100
 
+        # This part contains a possible explit of a call that starts in a reduced tariff in one day and eds on the next day
         if not (reducedTariff(initialTimeTuple) or reducedTariff(finalTimeTuple)):
             # pay for the entire call
             callMinutes = int((finalTimestamp - initialTimestamp) / 60)
@@ -61,8 +62,6 @@ class ChargeManager(IChargeManager):
             callMinutes = 0
         elif (reducedTariff(initialTimeTuple))
             pass
-
-            print("Special call")
 
         return truncate2Digits(self.__standingCharge + callMinutes * self.__minuteCharge)
 
