@@ -103,21 +103,24 @@ class ChargeManager(IChargeManager):
         elif finalTime.day == initialTime.day:
             ################################################################
             #print("Same Day call:")
-            #print("getBillableMinutes(", initialTime, ") + getBillableMinutes(", finalTime, ")\n")
+            #print("getBillableMinutes(", initialTime, finalTime, ")\n")
             ################################################################
             # if the tariff pass from onde day to the next, (1) and (2) will complement each other and return only the billable minutes
             if self.reducedTariffEnd < self.reducedTariffStart:
-                # I will start counting at the end of the reducedTariff (1)
-                if(initialTime.hour < self.reducedTariffEnd):
-                    _initialTime = initialTime.replace(hour=self.reducedTariffEnd, minute=0, second=0, microsecond=0)
-                    return self.getBillableMinutes(_initialTime, finalTime)
+                # it started at midnight and the previous day is treated in a different recursion
+                if(finalTime.hour < self.reducedTariffEnd):
+                    return 0
                 # it will end at midnight and the next day is treated in a different recursion
                 elif(initialTime.hour >= self.reducedTariffStart):
                     return 0
+                # I will start counting at the end of the reducedTariff (1)
+                elif(initialTime.hour < self.reducedTariffEnd):
+                    _initialTime = initialTime.replace(hour=self.reducedTariffEnd, minute=0, second=0, microsecond=0)
+                    return self.getBillableMinutes(_initialTime, finalTime)
                 # It will stop counting at the start of the reducedTariff (2)
                 elif(initialTime.hour >= self.reducedTariffEnd and finalTime.hour >= self.reducedTariffStart):
                     _finalTime = finalTime.replace(hour=self.reducedTariffStart, minute=0, second=0, microsecond=0) - datetime.timedelta(seconds=1)
-                    return self.getBillableMinutes(initialTime, _finalTime)
+                    return self.getBillableMinutes(initialTime, _finalTime) + 1  # the plus 1 is to compensate the timedelta
             else:
                 '''
                 This is not yet implement do speed up the delivery process, it would mainly use the same logic as the above block.
