@@ -1,5 +1,4 @@
-import calendar
-import time
+import datetime
 from abc import ABCMeta, abstractmethod
 
 
@@ -60,16 +59,12 @@ class IChargeManager(object):
                     "minuteCharge type must be an integer or a float.")
         self.__minuteCharge = value
 
-        '''
-        getCharge uses only timestamps, as per the YAGNI principle
-        '''
-
 
 class ChargeManager(IChargeManager):
 
     '''
     standingCharge and minuteCharge are self explanatory.
-    reducedTariffStart and reducedTariffEnd are in GMT and can be either:
+    reducedTariffStart and reducedTariffEnd can be either:
     a dictionary with {"tm_hour":hh, "tm_min":mm}, seconds can be ignored (removed as per YAGNI)
     two ints, as the hour. Minutes and seconds are ignored
     '''
@@ -80,64 +75,81 @@ class ChargeManager(IChargeManager):
         if type(reducedTariffStart) is int and type(reducedTariffEnd) is int:
             self.reducedTariffStart = reducedTariffStart
             self.reducedTariffEnd = reducedTariffEnd
-            '''
-            elif type(reducedTariffStart) is dict and type(reducedTariffEnd) is dict:
-                self.reducedTariffStart = reducedTariffStart["tm_hour"]
-                self.reducedTariffStartMinute = reducedTariffStart["tm_min"]
-                self.reducedTariffEnd = reducedTariffEnd["tm_hour"]
-                self.reducedTariffEndMinute = reducedTariffEnd["tm_min"]
-            '''
         else:
             raise TypeError(
                 "reducedTariffStart and reducedTariffEnd must be both integer.")
 
-    def reducedTariff(gmt):
-        # The first part is inclusive because it will use the remainder of the hour,
-        # the second part is exclusive to stop at the end of the previous hour
-        # ["tm_hour"] is the same as [3]
-        return True if (gmt[3] >= self.reducedTariffStart or gmt[3] < self.reducedTariffEnd) else False
-
-    def truncate2Digits(x):
-        return int(x * 100) / 100
-
-    def getBillableMinutes(self, initialTimeTuple, finalTimeTuple):
+    def getBillableMinutes(self, initialTime, finalTime):
         billableMinutes = 0
 
-        '''
-        Index	Attributes	Values
-        0	tm_year	2008
-        1	tm_mon	1 to 12
-        2	tm_mday	1 to 31
-        3	tm_hour	0 to 23
-        4	tm_min	0 to 59
-        5	tm_sec	0 to 61 (60 or 61 are leap-seconds)
-        6	tm_wday	0 to 6 (0 is Monday)
-        7	tm_yday	1 to 366 (Julian day)
-        8	tm_isdst	-1, 0, 1, -1 means library determines DST
-        '''
+        if finalTime.month != initialTime.month:
+            rightMiddleTime = finalTime.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            _delta = finalTime - rightMiddleTime
+            leftmiddleTime = finalTime - _delta - datetime.timedelta(seconds=1)
+            ################################################################
+            #print("Month call:")
+            #print("getBillableMinutes(", initialTime, leftmiddleTime, ") + getBillableMinutes(", rightMiddleTime, finalTime, ")\n")
+            ################################################################
+            return self.getBillableMinutes(initialTime, leftmiddleTime) + self.getBillableMinutes(rightMiddleTime, finalTime)
+        elif finalTime.day != initialTime.day:
+            rightMiddleTime = finalTime.replace(hour=0, minute=0, second=0, microsecond=0)
+            _delta = finalTime - rightMiddleTime
+            leftmiddleTime = finalTime - _delta - datetime.timedelta(seconds=1)
+            ################################################################
+            #print("Day call:")
+            #print("getBillableMinutes(", initialTime, leftmiddleTime, ") + getBillableMinutes(", rightMiddleTime, finalTime, ")\n")
+            ################################################################
+            return self.getBillableMinutes(initialTime, leftmiddleTime) + self.getBillableMinutes(rightMiddleTime, finalTime)
+        elif finalTime.day == initialTime.day:
+            ################################################################
+            #print("Same Day call:")
+            #print("getBillableMinutes(", initialTime, ") + getBillableMinutes(", finalTime, ")\n")
+            ################################################################
+            # if the tariff pass from onde day to the next, (1) and (2) will complement each other and return only the billable minutes
+            if self.reducedTariffEnd < self.reducedTariffStart:
+                # I will start counting at the end of the reducedTariff (1)
+                if(initialTime.hour < self.reducedTariffEnd):
+                    _initialTime = initialTime.replace(hour=self.reducedTariffEnd, minute=0, second=0, microsecond=0)
+                    return self.getBillableMinutes(_initialTime, finalTime)
+                # it will end at midnight and the next day is treated in a different recursion
+                elif(initialTime.hour >= self.reducedTariffStart):
+                    return 0
+                # It will stop counting at the start of the reducedTariff (2)
+                elif(initialTime.hour >= self.reducedTariffEnd and finalTime.hour >= self.reducedTariffStart):
+                    _finalTime = finalTime.replace(hour=self.reducedTariffStart, minute=0, second=0, microsecond=0) - datetime.timedelta(seconds=1)
+                    return self.getBillableMinutes(initialTime, _finalTime)
+            else:
+                '''
+                This is not yet implement do speed up the delivery process, it would mainly use the same logic as the above block.
+                '''
+                raise Exception("This is yet to be implemented")
 
-        if finalTimeTuple[1] != initialTimeTuple[1]:
-            pass
-        elif finalTimeTuple[2] != initialTimeTuple[2]:
-            # complex logic
-            pass
-        elif finalTimeTuple[3] != initialTimeTuple[3]:
-            # complex logic
-            pass
+        deltaSeconds = finalTime - initialTime
+        ################################################################
+        #print("timdelta: ", deltaSeconds, "total minutes", int(deltaSeconds.total_seconds() / 60))
+        ################################################################
+        billableMinutes = int(deltaSeconds.total_seconds() / 60)
 
         return billableMinutes
 
-    def getCharge(self, initialTimestamp, finalTimestamp):
-        # gmtime was chosen for system independence
-        billableMinutes = self.getBillableMinutes(
-            time.gmtime(initialTimestamp),
-            time.gmtime(finalTimestamp))
-        return self.standingCharge + billableMinutes * self.minuteCharge
+    def getCharge(self, initialTime, finalTime):
+        # A few typechecks
+        if type(initialTime) != type(finalTime):
+            raise TypeError("Types must match.")
+        if type(initialTime) is float:
+            initialTime = datetime.fromtimestamp(initialTime)
+            finalTime = datetime.fromtimestamp(finalTime)
+        if type(initialTime) is not datetime.datetime:
+            raise TypeError("Types must be either datetime or float(timestamp).")
+
+        billableMinutes = self.getBillableMinutes(initialTime, finalTime)
+        charge = self.standingCharge + billableMinutes * self.minuteCharge
+        return int(charge * 100) / 100
 
 
-test = ChargeManager(0.36, 0.09, 20, 6)
-print(test.getCharge(time.time(), time.time() + 80))
+test = ChargeManager(0.36, 0.09, 22, 6)
 
-localtime = time.gmtime(time.time())
-localtime.tm_year = 2010
-print("Local current time :", localtime.tm_year)
+localtime = datetime.datetime.now()
+testtime = localtime.replace(month=6, day=2)
+print("Local current time :", localtime, "test: ", testtime)
+print(test.getCharge(localtime, testtime))
