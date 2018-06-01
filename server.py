@@ -27,6 +27,12 @@ class Test(Resource):  # rota utilizada apenas no teste inicial e para testes ba
 
 
 class CallCentral(Resource):
+    standingCharge = 0.36
+    minuteCharge = 0.09
+    reducedTariffStart = 22
+    reducedTariffEnd = 6
+    chargeManagerObject = ChargeManager(standingCharge, minuteCharge, reducedTariffStart, reducedTariffEnd)
+
     def post(self):
         print(request.json)
         try:
@@ -52,6 +58,7 @@ class CallCentral(Resource):
             try:
                 _call_id = request.json["call_id"]
                 _timestamp = request.json["timestamp"]
+                _timestamp = ChargeManager.formatTime(_timestamp).timestamp()
                 _source = request.json["source"]
                 _destination = request.json["destination"]
             except:
@@ -62,21 +69,80 @@ class CallCentral(Resource):
                                  _timestamp,
                                  _source,
                                  _destination)
-            return {'status': 'Call registered'}
+
+            return {'status': "Call registered"}
+
         elif op == "end":
-            return {"error": "Invalid Operation"}
+            try:
+                _call_id = request.json["call_id"]
+                _endTimestamp = request.json["timestamp"]
+                _endTimestamp = ChargeManager.formatTime(_endTimestamp).timestamp()
+            except:
+                return {"error": "Empty field"}
+
+            __startTimestamp = conn.execute('select callTimestamp from Calls where call_id = ?;', _call_id)
+            _startTimestamp = __startTimestamp.fetchone()[0]
+            if not (_startTimestamp):
+                return {"error": "This call does not exist"}
+
+            print("Valores: ", _startTimestamp, _endTimestamp, "tipos: ", type(_startTimestamp), type(_endTimestamp))
+            _callValue = self.__class__.chargeManagerObject.getCharge(initialTime=float(_startTimestamp), finalTime=float(_endTimestamp))
+
+            query = conn.execute('update Calls set callEndTimestamp = ?, callValue = ? where call_id = ?',
+                                 _endTimestamp,
+                                 _callValue,
+                                 _call_id)
+
+            return {"status": "Call registered"}
         else:
             return {"error": "Invalid Operation"}
 
-        return {"Key1": "Working"}
-
 # curl -d '{"type":"start","call_id":"1", "timestamp":1527789900,"source":"123456","destination":"654321"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/record
-# curl -d '{"type":"end","call_id":"1", "timestamp":1527790500,"source":"123456","destination":"654321"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/record
+# curl -d '{"type":"end","call_id":"1", "timestamp":1527790500}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/record
+# curl -d '{"type":"start","call_id":"1", "timestamp":"2016-02-29T12:00:00Z","source":"123456","destination":"654321"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/record
+# curl -d '{"type":"end","call_id":"1", "timestamp":"2016-02-29T14:00:00Z"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/record
 # these timestamps are 10 minutes apart
 
 
+class BillCentral(Resource):
+
+    def post(self):
+        print(request.json)
+        try:
+            op = request.json["type"]
+        except:
+            return {"error": "Empty field"}
+
+        try:
+            conn = db_connect.connect()  # Conecata ao BD
+        except Exception as e:
+            return{"DBerror": e}
+
+        if op == "last":
+            _subscriber = request.json["subscriber"]
+
+            _query = conn.execute('select call_id, destination, callTimestamp, callEndTimestamp, callValue from Calls where source = ?;',
+                                  _subscriber)
+
+            calls_json = {}
+            bill_json = {}
+            for call in _query.fetchall():
+                calls_json["Destination"] = call[1]
+                # TODO check this again
+                calls_json["Start"] = datetime.datetime.fromtimestamp(call[4]).isoformat()
+                calls_json["End"] = datetime.datetime.fromtimestamp(call[3]).isoformat()
+                calls_json["Value"] = call[4]
+                bill_json[str(call[0])] = calls_json
+                calls_json = {}  # limpa o temporario
+
+            return bill_json
+
+# curl -d '{"type":"last","subscriber":"123456"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/bill
+
+
 api.add_resource(Test, '/test')  # Route_Test
-api.add_resource(CallCentral, '/record')  # Route_Test
+api.add_resource(CallCentral, '/record')
+api.add_resource(BillCentral, '/bill')
 
 
 if __name__ == '__main__':
