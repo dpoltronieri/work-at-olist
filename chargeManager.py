@@ -152,23 +152,6 @@ class ChargeManager(IChargeManager):
 
         return billableMinutes
 
-    def getCharge_old(self, initialTime, finalTime):
-        # A few typechecks
-        if type(initialTime) != type(finalTime):
-            raise TypeError("Types must match.")
-        if type(initialTime) is float:
-            initialTime = datetime.datetime.fromtimestamp(initialTime)
-            finalTime = datetime.datetime.fromtimestamp(finalTime)
-        if type(initialTime) is string:
-            initialTime = dateutil.parser.parse(initialTime)
-            finalTime = dateutil.parser.parse(finalTime)
-        if type(initialTime) is not datetime.datetime:
-            raise TypeError("Types must be either datetime or float(timestamp).")
-
-        billableMinutes = self.getBillableMinutes(initialTime, finalTime)
-        charge = self.standingCharge + billableMinutes * self.minuteCharge
-        return int(charge * 100) / 100
-
     def getCharge(self, initialTime, finalTime):
         initialTime = ChargeManager.formatTime(initialTime)
         finalTime = ChargeManager.formatTime(finalTime)
@@ -194,10 +177,10 @@ print(test.getCharge(localtime, testtime))
 
 
 print(dateutil.parser.parse('2016-02-29T12:00:00Z'))
-'''
 
 lastDay = calendar.monthrange(2018, 5)[1]
 firstTime = datetime.datetime(year=2018, month=5, day=1)
 lastTime = datetime.datetime(year=2018, month=5, day=lastDay) + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
 
 print("F: ", firstTime, "L: ", lastTime)
+'''
