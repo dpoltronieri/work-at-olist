@@ -65,3 +65,11 @@ class testChargeManager(unittest.TestCase):
 
         expectedCharge = int((self.__class__.standingCharge + self.__class__.minuteCharge * 0) * 100) / 100
         self.assertEqual(testCharge, expectedCharge)
+
+    def test_incorrect_call_order(self):
+
+        testTime1 = datetime.datetime(year=2018, month=2, day=5, hour=self.__class__.reducedTariffStart, minute=10)
+        testTime2 = datetime.datetime(year=2018, month=2, day=6, hour=self.__class__.reducedTariffEnd - 1, minute=10)
+        # self.assertRaises(ValueError, self.__class__.chargeManagerObject.getCharge(testTime2, testTime1))
+        with self.assertRaises(ValueError):
+            self.__class__.chargeManagerObject.getCharge(testTime2, testTime1)

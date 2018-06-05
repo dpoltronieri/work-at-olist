@@ -85,7 +85,6 @@ class ChargeManager(IChargeManager):
                 "reducedTariffStart and reducedTariffEnd must be both integer.")
 
     def formatTime(time):
-        print("tipo do formattime: ", type(time))
         if type(time) is float:
             time = datetime.datetime.fromtimestamp(time)
         if type(time) is int:
@@ -103,25 +102,13 @@ class ChargeManager(IChargeManager):
             rightMiddleTime = finalTime.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             _delta = finalTime - rightMiddleTime
             leftmiddleTime = finalTime - _delta - datetime.timedelta(seconds=1)
-            ################################################################
-            #print("Month call:")
-            #print("getBillableMinutes(", initialTime, leftmiddleTime, ") + getBillableMinutes(", rightMiddleTime, finalTime, ")\n")
-            ################################################################
             return self.getBillableMinutes(initialTime, leftmiddleTime) + self.getBillableMinutes(rightMiddleTime, finalTime)
         elif finalTime.day != initialTime.day:
             rightMiddleTime = finalTime.replace(hour=0, minute=0, second=0, microsecond=0)
             _delta = finalTime - rightMiddleTime
             leftmiddleTime = finalTime - _delta - datetime.timedelta(seconds=1)
-            ################################################################
-            #print("Day call:")
-            #print("getBillableMinutes(", initialTime, leftmiddleTime, ") + getBillableMinutes(", rightMiddleTime, finalTime, ")\n")
-            ################################################################
             return self.getBillableMinutes(initialTime, leftmiddleTime) + self.getBillableMinutes(rightMiddleTime, finalTime)
         elif finalTime.day == initialTime.day:
-            ################################################################
-            #print("Same Day call:")
-            #print("getBillableMinutes(", initialTime, finalTime, ")\n")
-            ################################################################
             # if the tariff pass from onde day to the next, (1) and (2) will complement each other and return only the billable minutes
             if self.reducedTariffEnd < self.reducedTariffStart:
                 # it started at midnight and the previous day is treated in a different recursion
@@ -145,9 +132,6 @@ class ChargeManager(IChargeManager):
                 raise Exception("This is yet to be implemented")
 
         deltaSeconds = finalTime - initialTime
-        ################################################################
-        #print("timdelta: ", deltaSeconds, "total minutes", int(deltaSeconds.total_seconds() / 60))
-        ################################################################
         billableMinutes = int(deltaSeconds.total_seconds() / 60)
 
         return billableMinutes
@@ -156,31 +140,9 @@ class ChargeManager(IChargeManager):
         initialTime = ChargeManager.formatTime(initialTime)
         finalTime = ChargeManager.formatTime(finalTime)
 
+        if(finalTime < initialTime):
+            raise ValueError("finalTime has to come after initialTime")
+
         billableMinutes = self.getBillableMinutes(initialTime, finalTime)
         charge = self.standingCharge + billableMinutes * self.minuteCharge
         return int(charge * 100) / 100
-
-
-'''
-test = ChargeManager(0.36, 0.09, 22, 6)
-
-#localtime = datetime.datetime.now()
-#testtime = localtime.replace(month=6, day=2)
-#print("Local current time :", localtime, "test: ", testtime)
-
-localtime = '2016-02-29T12:00:00Z'
-testtime = dateutil.parser.parse('2016-02-29T12:05:00Z')
-print(test.getCharge(localtime, testtime))
-
-#localtime2 = datetime.datetime(year=2018, month=2, day=5, hour=12, minute=0)
-# print(localtime2)
-
-
-print(dateutil.parser.parse('2016-02-29T12:00:00Z'))
-
-lastDay = calendar.monthrange(2018, 5)[1]
-firstTime = datetime.datetime(year=2018, month=5, day=1)
-lastTime = datetime.datetime(year=2018, month=5, day=lastDay) + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
-
-print("F: ", firstTime, "L: ", lastTime)
-'''

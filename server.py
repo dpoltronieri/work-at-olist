@@ -15,18 +15,6 @@ api = Api(app)
 # export FLASK_DEBUG=1
 
 
-class Test(Resource):  # rota utilizada apenas no teste inicial e para testes basicos
-    def get(self):
-        return {"Teste": "Mensagem de Get"}
-
-    def post(self):
-        print(request.json)
-        return {'Key1': request.json['key1'], 'key2:': request.json['key2']}
-
-# curl http://127.0.0.1:5000/test
-# curl -d '{"key1":"value1", "key2":"value2"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/test
-
-
 class CallCentral(Resource):
     standingCharge = 0.36
     minuteCharge = 0.09
@@ -34,30 +22,25 @@ class CallCentral(Resource):
     reducedTariffEnd = 6
     chargeManagerObject = ChargeManager(standingCharge, minuteCharge, reducedTariffStart, reducedTariffEnd)
 
+    # this post method expects an Operation in the "type" field, and for the paths:
+    # start: "call_id","timestamp","source" and "destination"
+    # end: "call_id" and "timestamp"
     def post(self):
-        print(request.json)
+        # print(request.json)
         try:
             op = request.json["type"]
         except:
             return {"error": "Empty field"}
 
         try:
-            conn = db_connect.connect()  # Conecata ao BD
+            conn = db_connect.connect()
         except Exception as e:
             return{"DBerror": e}
-        '''
-        {
-          "id":  // Record unique identificator;
-          "type":  // Indicate if it's a call "start" or "end" record;
-          "timestamp":  // The timestamp of when the event occured;
-          "call_id":  // Unique for each call record pair;
-          "source":  // The subscriber phone number that originated the call;
-          "destination":  // The phone number receiving the call.
-        }
-        '''
+
         if op == "start":
             try:
                 _call_id = request.json["call_id"]
+                # all datetime values are stored as epoch values
                 _timestamp = request.json["timestamp"]
                 _timestamp = ChargeManager.formatTime(_timestamp).timestamp()
                 _source = request.json["source"]
@@ -76,19 +59,22 @@ class CallCentral(Resource):
         elif op == "end":
             try:
                 _call_id = request.json["call_id"]
+                # all datetime values are stored as epoch values
                 _endTimestamp = request.json["timestamp"]
                 _endTimestamp = ChargeManager.formatTime(_endTimestamp).timestamp()
             except:
                 return {"error": "Empty field"}
 
             __startTimestamp = conn.execute('select callTimestamp from Calls where call_id = ?;', _call_id)
-            _startTimestamp = __startTimestamp.fetchone()[0]
-            if not (_startTimestamp):
+            # This part assumes that the call_id is unique, but tests if it exists
+            try:
+                _startTimestamp = __startTimestamp.fetchone()[0]
+            except:
                 return {"error": "This call does not exist"}
+            if _startTimestamp >= _endTimestamp:
+                return {"error": "The call has negative, or zero time"}
 
-            print("Valores: ", _startTimestamp, _endTimestamp, "tipos: ", type(_startTimestamp), type(_endTimestamp))
             _callValue = self.__class__.chargeManagerObject.getCharge(initialTime=float(_startTimestamp), finalTime=float(_endTimestamp))
-
             query = conn.execute('update Calls set callEndTimestamp = ?, callValue = ? where call_id = ?',
                                  _endTimestamp,
                                  _callValue,
@@ -107,15 +93,19 @@ class CallCentral(Resource):
 
 class BillCentral(Resource):
 
+    # this post method expects an Operation in the "type" field, and for the paths:
+    # last: "subscriber"
+    # period: "subscriber", "periodStartMonth", "periodStartYear", "periodEndMonth" and "periodEndYear"
+    # With the non-"subscriber" ones being integers in the MM and YYYY format
     def post(self):
-        print(request.json)
+        # print(request.json)
         try:
             op = request.json["type"]
         except:
             return {"error": "Empty field"}
 
         try:
-            conn = db_connect.connect()  # Conecata ao BD
+            conn = db_connect.connect()
         except Exception as e:
             return{"DBerror": e}
 
@@ -125,10 +115,12 @@ class BillCentral(Resource):
             except:
                 return {"error": "Empty field"}
 
-            _lastPeriodEnd = datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(seconds=1)
-            _lastPeriodStart = _lastPeriodEnd.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            _periodStart = _lastPeriodStart.timestamp()
-            _periodEnd = _lastPeriodEnd.timestamp()
+            # Get the first minute of the current month, subtract one second to get the last minute of the previous month
+            # From that, get the first minute of the last month
+            _periodEnd = datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0) - datetime.timedelta(seconds=1)
+            _periodStart = _periodEnd.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            # _periodStart = _lastPeriodStart.timestamp()
+            # _periodEnd = _lastPeriodEnd.timestamp()
 
         elif op == "period":
             try:
@@ -140,15 +132,19 @@ class BillCentral(Resource):
             except:
                 return {"error": "Empty field"}
 
+            # Check the integrity of the input
             if all(map(lambda k: type(k) is int,
                        [_periodStartMonth, _periodStartYear,
                         _periodEndMonth, _periodEndYear])):
-
+                # The first second of the starting month
                 _periodStart = datetime.datetime(year=_periodStartYear,
                                                  month=_periodStartMonth,
                                                  day=1, hour=0, minute=0)
+                # Go to the first minute of the month after the end of the period and subtract one second
+                # No actual idea why the !=
+                _periodEndYear, _periodEndMonth = [_periodEndYear, _periodEndMonth + 1] if _periodEndMonth != 12 else [_periodEndYear + 1, 1]
                 _periodEnd = datetime.datetime(year=_periodEndYear,
-                                               month=(_periodEndMonth + 1) % 12,
+                                               month=_periodEndMonth,
                                                day=1, hour=0, minute=0) - datetime.timedelta(seconds=1)
             else:
                 return {"error": "Periods must all be interger numbers"}
@@ -160,8 +156,9 @@ class BillCentral(Resource):
                               _periodStart,
                               _periodEnd)
 
-        calls_json = {}
-        bill_json = {}
+        # Jsonify the result from the query
+        calls_json = {}  # Temporary dictionary (each call)
+        bill_json = {}  # final dictionary (the entire bill)
         for call in _query.fetchall():
             calls_json["Destination"] = call[1]
             # TODO check this again
@@ -169,7 +166,7 @@ class BillCentral(Resource):
             calls_json["End"] = datetime.datetime.fromtimestamp(call[3]).isoformat()
             calls_json["Value"] = call[4]
             bill_json[str(call[0])] = calls_json
-            calls_json = {}  # limpa o temporario
+            calls_json = {}  # clears the temp dict
 
         return bill_json
 
@@ -177,7 +174,6 @@ class BillCentral(Resource):
 # curl -d '{"type":"last","subscriber":"123456"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:5000/bill
 
 
-api.add_resource(Test, '/test')  # Route_Test
 api.add_resource(CallCentral, '/record')
 api.add_resource(BillCentral, '/bill')
 
