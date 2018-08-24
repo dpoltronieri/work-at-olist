@@ -2,7 +2,9 @@ import json
 from rest_framework import status
 from django.test import TestCase, Client
 from django.urls import reverse
+
 from billing.models import Call
+from billing.serializers import CallSerializer
 
 # initialize the APIClient app
 client = Client()
@@ -29,10 +31,9 @@ class GetAllCallsTest(TestCase):
     def test_get_all_completed_calls(self):
         # get API response
         # response = client.get(reverse('get_post_calls'))
-        response = client.get('/get_post_calls/')
-        print(response)
-        # get data from db
-        #calls = Call.objects.all().exclude(end=Null)
-        # serializer = PuppySerializer(puppies, many=True)
-        # self.assertEqual(response.data, serializer.data)
-        # self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = client.get(reverse('get_post_calls'))
+        # get data from db, exluding unfinished calls
+        calls = Call.objects.all().exclude(end=None)
+        serializer = CallSerializer(calls, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

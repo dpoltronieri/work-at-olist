@@ -16,6 +16,7 @@ class get_post_calls(APIView):
     """
 
     def get(self, request, format=None):
-        calls = Call.objects.all()
+        calls = Call.objects.all().exclude(end=None)
         serializer = CallSerializer(calls, many=True)
+        print(serializer.data)
         return Response(serializer.data)
