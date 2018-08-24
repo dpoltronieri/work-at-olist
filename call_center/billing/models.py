@@ -12,6 +12,7 @@ class Call(models.Model):
     # IDEA: Put this in the documentation as a feature
     start = models.DateTimeField(default=timezone.now)
     end = models.DateTimeField(null=True)
+    #duration = models.DurationField(null=True)
     source = models.CharField(max_length=20)
     destination = models.CharField(max_length=20)
 

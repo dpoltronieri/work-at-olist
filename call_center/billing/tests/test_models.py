@@ -1,7 +1,7 @@
 from django.test import TestCase
 from billing.models import Call
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 class ValidCallTest(TestCase):
@@ -32,11 +32,4 @@ class ValidCallTest(TestCase):
         call_1.end = "2018-08-24 08:40:00+00:00"
         call_1.save()
 
-        self.assertEqual(Call.objects.all().count(), 2)
-
-    def test_vallid_call_ends_by_function(self):
-        call_2 = Call.objects.get(id=2)
-
-        call_2.end_call("2018-08-24 12:40:00+00:00")
-        self.assertEqual(call_2.duration, datetime.timedelta(minutes=10))
         self.assertEqual(Call.objects.all().count(), 2)
