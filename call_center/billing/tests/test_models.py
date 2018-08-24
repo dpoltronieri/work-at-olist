@@ -14,11 +14,13 @@ class ValidCallTest(TestCase):
             source="991366272",
             destination="991970287",
             start="2018-08-24 08:30:00+00:00",
+            call_id=50,
         )
         call_2 = Call.objects.create(
             source="991970287",
             destination="991905858",
             start="2018-08-24 12:30:00+00:00",
+            call_id=51,
         )
         self.assertEqual(Call.objects.all().count(), 2)
         # print(call_start_1.id)
