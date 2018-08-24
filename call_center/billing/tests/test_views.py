@@ -57,6 +57,7 @@ class CreateNewCallTest(TestCase):
 
     def setUp(self):
         self.valid_payload = {
+            'type': "start",
             'source': "991366272",
             'destination': "991970287",
             'start': "2018-08-24 08:30:00+00:00",
@@ -64,21 +65,25 @@ class CreateNewCallTest(TestCase):
         }
 
         self.invalid_payloads = ({
+            'type': "start",
             'source': "",
             'destination': "991970287",
             'start': "2018-08-24 08:30:00+00:00",
             'call_id': '50'
         }, {
+            'type': "start",
             'source': "991366272",
             'destination': "",
             'start': "2018-08-24 08:30:00+00:00",
             'call_id': '50'
         }, {
+            'type': "start",
             'source': "991366272",
             'destination': "991970287",
             'start': "",
             'call_id': '50'
         }, {
+            'type': "start",
             'source': "991366272",
             'destination': "991970287",
             'start': "2018-08-24 08:30:00+00:00",
@@ -107,7 +112,7 @@ class CreateNewCallTest(TestCase):
 
 class FinishCallTest(TestCase):
     """
-    Test module for completing a call from begining to end and billing
+    Test module for completing a call from begining to end
     """
 
     def setUp(self):
@@ -125,9 +130,11 @@ class FinishCallTest(TestCase):
             'call_id': '50'
         }
         self.invalid_end_payloads = ({
+            'type': "end",
             'end': "",
             'call_id': '50'
         }, {
+            'type': "end",
             'end': "2018-08-24 08:30:00+00:00",
             'call_id': ''
         })
@@ -140,7 +147,6 @@ class FinishCallTest(TestCase):
             content_type='application/json'
         )
         self.assertEqual(start_response.status_code, status.HTTP_201_CREATED)
-        print(Call.objects.get(call_id=50))
 
         end_response = client.post(
             reverse('get_post_calls'),
