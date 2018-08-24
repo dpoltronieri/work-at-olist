@@ -1,5 +1,5 @@
 from django.test import TestCase
-from billing.models import CallBill, CallStart, CallEnd
+from billing.models import Call
 from django.utils import timezone
 
 
