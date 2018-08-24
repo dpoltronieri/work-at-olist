@@ -30,10 +30,18 @@ class GetAllCallsTest(TestCase):
 
     def test_get_all_completed_calls(self):
         # get API response
-        # response = client.get(reverse('get_post_calls'))
         response = client.get(reverse('get_post_calls'))
         # get data from db, exluding unfinished calls
         calls = Call.objects.all().exclude(end=None)
+        serializer = CallSerializer(calls, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_all_incomplete_calls(self):
+        # get API response
+        response = client.get(reverse('get_incomplete_calls'))
+        # get data from db, exluding unfinished calls
+        calls = Call.objects.all().filter(end=None)
         serializer = CallSerializer(calls, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
