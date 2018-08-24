@@ -20,12 +20,14 @@ class GetAllCallsTest(TestCase):
             source="991366272",
             destination="991970287",
             start="2018-08-24 08:30:00+00:00",
+            call_id=50,
         )
         call_2 = Call.objects.create(
             source="991970287",
             destination="991905858",
             start="2018-08-24 12:30:00+00:00",
             end="2018-08-24 12:40:00+00:00",
+            call_id=51,
         )
 
     def test_get_all_completed_calls(self):
