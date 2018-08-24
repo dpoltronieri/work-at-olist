@@ -20,6 +20,14 @@ class get_post_calls(APIView):
         serializer = CallSerializer(calls, many=True)
         return Response(serializer.data)
 
+    def post(self, request, format=None):
+        serializer = CallSerializer(data=request.data)
+        print(serializer)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class get_incomplete_calls(APIView):
     """

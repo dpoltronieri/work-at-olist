@@ -67,7 +67,7 @@ class CreateNewCallTest(TestCase):
             'destination': "",
             'start': "2018-08-24 08:30:00+00:00",
             'call_id': '50'
-        }
+        },
 
     def test_create_valid_call(self):
         response = client.post(
