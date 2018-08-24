@@ -15,6 +15,7 @@ class Call(models.Model):
     #duration = models.DurationField(null=True)
     source = models.CharField(max_length=20)
     destination = models.CharField(max_length=20)
+    call_id = models.BigIntegerField(default=-1)
 
     def __str__(self):
         return "Call between the numbers {}(source) and {}(destination).".format(self.source, self.destination)
