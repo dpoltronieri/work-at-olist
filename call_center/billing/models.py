@@ -28,6 +28,9 @@ class CallEnd(models.Model):
     # Check the above
     timestamp = models.DateTimeField(default=timezone.now)
 
+    def __str__(self):
+        return "Start: {} Timestamp: {}".format(self.start, self.timestamp)
+
 
 class CallBill(models.Model):
     call_start = models.OneToOneField(
