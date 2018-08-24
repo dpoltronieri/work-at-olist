@@ -102,3 +102,29 @@ class CreateNewCallTest(TestCase):
             )
             self.assertEqual(response.status_code,
                              status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
+
+
+class FinishCallTest(TestCase):
+    """
+    Test module for completing a call from begining to end and billing
+    """
+
+    def setUp(self):
+        # IDEA: multiple valid start and end payloads
+        self.valid_payload = {
+            'end': "2018-08-24 08:30:00+00:00",
+            'call_id': '50'
+        }
+        self.invalid_payloads = ({
+            'end': "",
+            'call_id': '50'
+        }, {
+            'end': "2018-08-24 08:30:00+00:00",
+            'call_id': ''
+        })
+
+    def test_create_valid_call(self):
+        pass
+
+    def test_create_invalid_call(self):
+        pass
