@@ -32,20 +32,20 @@ class CallEnd(models.Model):
         return "Start: {} Timestamp: {}".format(self.start, self.timestamp)
 
 
-class CallBill(models.Model):
-    call_start = models.OneToOneField(
-        CallStart,
-        on_delete=models.CASCADE,
-        primary_key=True,
-    )
-    call_end = models.OneToOneField(
-        CallEnd,
-        on_delete=models.CASCADE,
-    )
-    # Probably is unecessary
-    #duration = models.DurationField()
-    billable_duration = models.DurationField()
-    price = models.FloatField()
+# class CallBill(models.Model):
+#     call_start = models.OneToOneField(
+#         CallStart,
+#         on_delete=models.CASCADE,
+#         primary_key=True,
+#     )
+#     call_end = models.OneToOneField(
+#         CallEnd,
+#         on_delete=models.CASCADE,
+#     )
+#     # Probably is unecessary
+#     #duration = models.DurationField()
+#     billable_duration = models.DurationField()
+#     price = models.FloatField()
 
 
 """
