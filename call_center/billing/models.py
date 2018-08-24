@@ -18,4 +18,10 @@ class Call(models.Model):
     call_id = models.BigIntegerField(null=False, unique=True)
 
     def __str__(self):
-        return "Call between the numbers {}(source) and {}(destination).".format(self.source, self.destination)
+        return "id: {},call_id: {},start: {},end: {},source: {},destination: {}".format(
+            self.id,
+            self.call_id,
+            self.start,
+            self.end,
+            self.source,
+            self.destination)
