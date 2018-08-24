@@ -22,7 +22,8 @@ class get_post_calls(APIView):
 
     def post(self, request, format=None):
         serializer = CallSerializer(data=request.data)
-        print(serializer)
+        # print(serializer)
+        # print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

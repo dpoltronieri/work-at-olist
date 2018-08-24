@@ -2,6 +2,7 @@ import json
 from rest_framework import status
 from django.test import TestCase, Client
 from django.urls import reverse
+from datetime import timedelta, datetime
 
 from billing.models import Call
 from billing.serializers import CallSerializer
@@ -111,11 +112,19 @@ class FinishCallTest(TestCase):
 
     def setUp(self):
         # IDEA: multiple valid start and end payloads
-        self.valid_payload = {
-            'end': "2018-08-24 08:30:00+00:00",
+        self.valid_start_payload = {
+            'type': "start",
+            'source': "991366272",
+            'destination': "991970287",
+            'start': "2018-08-24 08:30:00+00:00",
             'call_id': '50'
         }
-        self.invalid_payloads = ({
+        self.valid_end_payload = {
+            'type': "end",
+            'end': "2018-08-24 08:40:00+00:00",
+            'call_id': '50'
+        }
+        self.invalid_end_payloads = ({
             'end': "",
             'call_id': '50'
         }, {
@@ -124,7 +133,24 @@ class FinishCallTest(TestCase):
         })
 
     def test_create_valid_call(self):
-        pass
+        # test looking through the client side
+        start_response = client.post(
+            reverse('get_post_calls'),
+            data=json.dumps(self.valid_start_payload),
+            content_type='application/json'
+        )
+        self.assertEqual(start_response.status_code, status.HTTP_201_CREATED)
+        print(Call.objects.get(call_id=50))
+
+        end_response = client.post(
+            reverse('get_post_calls'),
+            data=json.dumps(self.valid_end_payload),
+            content_type='application/json'
+        )
+        self.assertEqual(end_response.status_code, status.HTTP_201_CREATED)
+
+        # test looking through the server side
+        print(Call.objects.get(call_id=50))
 
     def test_create_invalid_call(self):
         pass
