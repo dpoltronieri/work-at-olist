@@ -131,7 +131,15 @@ class FinishCallTest(TestCase):
         # TODO: complete invalid invalid_end_payloads
         self.invalid_end_payloads = ({
             'type': "end",
-            'end': ""
+            'end': "2018-08-24 08:40:00+00:00"
+        }, {
+            'type': "end",
+            'end': "",
+            'call_id': "10"
+        }, {
+            'type': "",
+            'end': "2018-08-24 08:40:00+00:00",
+            'call_id': "10"
         },
         )
 
@@ -152,4 +160,18 @@ class FinishCallTest(TestCase):
         self.assertEqual(end_response.status_code, status.HTTP_201_CREATED)
 
     def test_create_invalid_call(self):
-        pass
+        start_response = client.post(
+            reverse('get_post_calls'),
+            data=json.dumps(self.valid_start_payload),
+            content_type='application/json'
+        )
+        self.assertEqual(start_response.status_code, status.HTTP_201_CREATED)
+
+        for payload in self.invalid_end_payloads:
+            response = client.post(
+                reverse('get_post_calls'),
+                data=json.dumps(payload),
+                content_type='application/json'
+            )
+            self.assertEqual(response.status_code,
+                             status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))

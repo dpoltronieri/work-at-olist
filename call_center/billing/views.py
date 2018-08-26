@@ -28,13 +28,16 @@ class get_post_calls(APIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+            # TODO: Evaluate refactor for this as PUT method
         elif request.data['type'] == 'end':
 
             try:
                 running_call = Call.objects.get(
                     call_id=request.data['call_id'])
-            except Puppy.DoesNotExist:
-                return Response(status=status.status.HTTP_400_BAD_REQUEST)
+            except Call.DoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            except KeyError:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
             serializer = CallSerializer(
                 running_call, data=request.data, partial=True)
@@ -44,7 +47,7 @@ class get_post_calls(APIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class get_incomplete_calls(APIView):
