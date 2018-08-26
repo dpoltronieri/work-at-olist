@@ -50,21 +50,27 @@ class GetAllCallsTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class CreateNewCallTest(TestCase):
+class POSTCallTest(TestCase):
     """
-    Test module for inserting a new start call
+    Test module for completing a call from begining to end
     """
 
     def setUp(self):
-        self.valid_payload = {
+        # IDEA: multiple valid start and end payloads
+        self.valid_start_payload = {
             'type': "start",
             'source': "991366272",
             'destination': "991970287",
             'start': "2018-08-24 08:30:00+00:00",
             'call_id': "10"
         }
+        self.valid_end_payload = {
+            'type': "end",
+            'end': "2018-08-24 08:40:00+00:00",
+            'call_id': "10"
+        }
 
-        self.invalid_payloads = ({
+        self.invalid_start_payloads = ({
             'type': "start",
             'source': "",
             'destination': "991970287",
@@ -89,46 +95,6 @@ class CreateNewCallTest(TestCase):
             'start': "2018-08-24 08:30:00+00:00",
             'call_id': ""
         },)
-
-    def test_create_valid_call(self):
-        response = client.post(
-            reverse('get_post_calls'),
-            data=json.dumps(self.valid_payload),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-    def test_create_invalid_call(self):
-        for payload in self.invalid_payloads:
-            response = client.post(
-                reverse('get_post_calls'),
-                data=json.dumps(payload),
-                content_type='application/json'
-            )
-            self.assertEqual(response.status_code,
-                             status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
-
-
-class FinishCallTest(TestCase):
-    """
-    Test module for completing a call from begining to end
-    """
-
-    def setUp(self):
-        # IDEA: multiple valid start and end payloads
-        self.valid_start_payload = {
-            'type': "start",
-            'source': "991366272",
-            'destination': "991970287",
-            'start': "2018-08-24 08:30:00+00:00",
-            'call_id': "10"
-        }
-        self.valid_end_payload = {
-            'type': "end",
-            'end': "2018-08-24 08:40:00+00:00",
-            'call_id': "10"
-        }
-        # TODO: complete invalid invalid_end_payloads
         self.invalid_end_payloads = ({
             'type': "end",
             'end': "2018-08-24 08:40:00+00:00"
@@ -143,7 +109,25 @@ class FinishCallTest(TestCase):
         },
         )
 
-    def test_create_valid_call(self):
+    def test_start_valid_call(self):
+        response = client.post(
+            reverse('get_post_calls'),
+            data=json.dumps(self.valid_start_payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_start_invalid_call(self):
+        for payload in self.invalid_start_payloads:
+            response = client.post(
+                reverse('get_post_calls'),
+                data=json.dumps(payload),
+                content_type='application/json'
+            )
+            self.assertEqual(response.status_code,
+                             status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
+
+    def test_start_end_valid_call(self):
         # test looking through the client side
         start_response = client.post(
             reverse('get_post_calls'),
@@ -159,7 +143,7 @@ class FinishCallTest(TestCase):
         )
         self.assertEqual(end_response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_invalid_call(self):
+    def test_invalid_end_call(self):
         start_response = client.post(
             reverse('get_post_calls'),
             data=json.dumps(self.valid_start_payload),
@@ -175,3 +159,6 @@ class FinishCallTest(TestCase):
             )
             self.assertEqual(response.status_code,
                              status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
+
+    def test_billing_10_minutes_no_reduced_tariff(self):
+        pass
