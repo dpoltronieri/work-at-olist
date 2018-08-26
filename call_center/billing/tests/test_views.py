@@ -21,14 +21,14 @@ class GetAllCallsTest(TestCase):
             source="991366272",
             destination="991970287",
             start="2018-08-24 08:30:00+00:00",
-            call_id=50,
+            call_id=30
         )
         call_2 = Call.objects.create(
             source="991970287",
             destination="991905858",
             start="2018-08-24 12:30:00+00:00",
             end="2018-08-24 12:40:00+00:00",
-            call_id=51,
+            call_id=31
         )
 
     def test_get_all_completed_calls(self):
@@ -61,7 +61,7 @@ class CreateNewCallTest(TestCase):
             'source': "991366272",
             'destination': "991970287",
             'start': "2018-08-24 08:30:00+00:00",
-            'call_id': '50'
+            'call_id': "10"
         }
 
         self.invalid_payloads = ({
@@ -69,27 +69,26 @@ class CreateNewCallTest(TestCase):
             'source': "",
             'destination': "991970287",
             'start': "2018-08-24 08:30:00+00:00",
-            'call_id': '50'
+            'call_id': "10"
         }, {
             'type': "start",
             'source': "991366272",
             'destination': "",
             'start': "2018-08-24 08:30:00+00:00",
-            'call_id': '50'
+            'call_id': "10"
         }, {
             'type': "start",
             'source': "991366272",
             'destination': "991970287",
             'start': "",
-            'call_id': '50'
+            'call_id': "10"
         }, {
             'type': "start",
             'source': "991366272",
             'destination': "991970287",
             'start': "2018-08-24 08:30:00+00:00",
-            'call_id': ''
-        },
-        )
+            'call_id': ""
+        },)
 
     def test_create_valid_call(self):
         response = client.post(
@@ -122,22 +121,19 @@ class FinishCallTest(TestCase):
             'source': "991366272",
             'destination': "991970287",
             'start': "2018-08-24 08:30:00+00:00",
-            'call_id': '50'
+            'call_id': "10"
         }
         self.valid_end_payload = {
             'type': "end",
             'end': "2018-08-24 08:40:00+00:00",
-            'call_id': '50'
+            'call_id': "10"
         }
+        # TODO: complete invalid invalid_end_payloads
         self.invalid_end_payloads = ({
             'type': "end",
-            'end': "",
-            'call_id': '50'
-        }, {
-            'type': "end",
-            'end': "2018-08-24 08:30:00+00:00",
-            'call_id': ''
-        })
+            'end': ""
+        },
+        )
 
     def test_create_valid_call(self):
         # test looking through the client side
@@ -154,9 +150,6 @@ class FinishCallTest(TestCase):
             content_type='application/json'
         )
         self.assertEqual(end_response.status_code, status.HTTP_201_CREATED)
-
-        # test looking through the server side
-        print(Call.objects.get(call_id=50))
 
     def test_create_invalid_call(self):
         pass

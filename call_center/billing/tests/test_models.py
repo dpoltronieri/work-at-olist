@@ -29,7 +29,7 @@ class ValidCallTest(TestCase):
         # print(timezone.now())
 
     def test_vallid_call_ends_manually(self):
-        call_1 = Call.objects.get(id=1)
+        call_1 = Call.objects.get(call_id=50)
 
         call_1.end = "2018-08-24 08:40:00+00:00"
         call_1.save()

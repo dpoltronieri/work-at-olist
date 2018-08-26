@@ -27,10 +27,17 @@ class get_post_calls(APIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         elif request.data['type'] == 'end':
-            serializer = CallSerializer(data=request.data, partial=True)
-            print(serializer)
-            print(serializer.is_valid())
+
+            try:
+                running_call = Call.objects.get(
+                    call_id=request.data['call_id'])
+            except Puppy.DoesNotExist:
+                return Response(status=status.status.HTTP_400_BAD_REQUEST)
+
+            serializer = CallSerializer(
+                running_call, data=request.data, partial=True)
 
             if serializer.is_valid():
                 serializer.save()

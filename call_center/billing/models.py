@@ -18,8 +18,7 @@ class Call(models.Model):
     call_id = models.BigIntegerField(primary_key=True, unique=True)
 
     def __str__(self):
-        return "id: {},call_id: {},start: {},end: {},source: {},destination: {}".format(
-            self.id,
+        return "call_id: {},start: {},end: {},source: {},destination: {}".format(
             self.call_id,
             self.start,
             self.end,
