@@ -21,12 +21,22 @@ class get_post_calls(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = CallSerializer(data=request.data)
-        # print(serializer)
         if request.data['type'] == 'start':
+            serializer = CallSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.data['type'] == 'end':
+            serializer = CallSerializer(data=request.data, partial=True)
+            print(serializer)
+            print(serializer.is_valid())
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
