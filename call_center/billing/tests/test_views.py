@@ -168,4 +168,7 @@ class POSTCallTest(TestCase):
 
     def test_billing_10_minutes_no_reduced_tariff(self):
         self.test_start_end_valid_call()
+
+        self.assertEqual(self.end_response.data['billable_minutes'], 10)
+        self.assertEqual(self.end_response.data['call_price'], 1.26)
         print(self.end_response.data)
