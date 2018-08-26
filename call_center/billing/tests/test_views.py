@@ -56,6 +56,8 @@ class POSTCallTest(TestCase):
     """
 
     def setUp(self):
+        self.end_response = ""
+        self.start_response = ""
         # IDEA: multiple valid start and end payloads
         self.valid_start_payload = {
             'type': "start",
@@ -110,55 +112,60 @@ class POSTCallTest(TestCase):
         )
 
     def test_start_valid_call(self):
-        response = client.post(
+        self.start_response = client.post(
             reverse('get_post_calls'),
             data=json.dumps(self.valid_start_payload),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.start_response.status_code,
+                         status.HTTP_201_CREATED)
 
     def test_start_invalid_call(self):
         for payload in self.invalid_start_payloads:
-            response = client.post(
+            self.start_response = client.post(
                 reverse('get_post_calls'),
                 data=json.dumps(payload),
                 content_type='application/json'
             )
-            self.assertEqual(response.status_code,
+            self.assertEqual(self.start_response.status_code,
                              status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
 
     def test_start_end_valid_call(self):
         # test looking through the client side
-        start_response = client.post(
+        self.start_response = client.post(
             reverse('get_post_calls'),
             data=json.dumps(self.valid_start_payload),
             content_type='application/json'
         )
-        self.assertEqual(start_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.start_response.status_code,
+                         status.HTTP_201_CREATED)
 
-        end_response = client.post(
+        self.end_response = client.post(
             reverse('get_post_calls'),
             data=json.dumps(self.valid_end_payload),
             content_type='application/json'
         )
-        self.assertEqual(end_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.end_response.status_code,
+                         status.HTTP_201_CREATED)
 
     def test_invalid_end_call(self):
-        start_response = client.post(
+        self.start_response = client.post(
             reverse('get_post_calls'),
             data=json.dumps(self.valid_start_payload),
             content_type='application/json'
         )
-        self.assertEqual(start_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.start_response.status_code,
+                         status.HTTP_201_CREATED)
 
         for payload in self.invalid_end_payloads:
-            response = client.post(
+            self.end_response = client.post(
                 reverse('get_post_calls'),
                 data=json.dumps(payload),
                 content_type='application/json'
             )
-            self.assertEqual(response.status_code,
+            self.assertEqual(self.end_response.status_code,
                              status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
 
     def test_billing_10_minutes_no_reduced_tariff(self):
-        pass
+        self.test_start_end_valid_call()
+        print(self.end_response.data)
