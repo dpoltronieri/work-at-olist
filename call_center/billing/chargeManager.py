@@ -1,7 +1,6 @@
 from datetime import timedelta, datetime
 
 from billing.models import Charge
-#from billing.serializers import ChargeSerializer
 
 
 class ChargeManager():
@@ -51,13 +50,13 @@ class ChargeManager():
             rightMiddleTime = finalTime.replace(
                 day=1, hour=0, minute=0, second=0, microsecond=0)
             _delta = finalTime - rightMiddleTime
-            leftmiddleTime = finalTime - _delta - datetime.timedelta(seconds=1)
+            leftmiddleTime = finalTime - _delta - timedelta(seconds=1)
             return ChargeManager.getBillableMinutes(initialTime, leftmiddleTime) + ChargeManager.getBillableMinutes(rightMiddleTime, finalTime)
         elif finalTime.day != initialTime.day:
             rightMiddleTime = finalTime.replace(
                 hour=0, minute=0, second=0, microsecond=0)
             _delta = finalTime - rightMiddleTime
-            leftmiddleTime = finalTime - _delta - datetime.timedelta(seconds=1)
+            leftmiddleTime = finalTime - _delta - timedelta(seconds=1)
             return ChargeManager.getBillableMinutes(initialTime, leftmiddleTime) + ChargeManager.getBillableMinutes(rightMiddleTime, finalTime)
         elif finalTime.day == initialTime.day:
             # if the tariff pass from onde day to the next, (1) and (2) will complement each other and return only the billable minutes
@@ -76,7 +75,7 @@ class ChargeManager():
                 # It will stop counting at the start of the reducedTariff (2)
                 elif(initialTime.hour >= Charge.objects.latest('enforced').reduced_tariff_end and finalTime.hour >= Charge.objects.latest('enforced').reduced_tariff_start):
                     _finalTime = finalTime.replace(
-                        hour=Charge.objects.latest('enforced').reduced_tariff_start, minute=0, second=0, microsecond=0) - datetime.timedelta(seconds=1)
+                        hour=Charge.objects.latest('enforced').reduced_tariff_start, minute=0, second=0, microsecond=0) - timedelta(seconds=1)
                     # the plus 1 is to compensate the timedelta
                     return ChargeManager.getBillableMinutes(initialTime, _finalTime) + 1
             else:
