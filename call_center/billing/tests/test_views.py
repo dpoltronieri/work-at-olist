@@ -177,3 +177,133 @@ class POSTCallTest(TestCase):
         self.test_start_end_valid_call()
 
         self.assertEqual(self.end_response.data['call_price'], 1.25)
+
+
+class GetBillTest(TestCase):
+
+    def setUp(self):
+        # From the challenge specification
+        # These calls are between the numbers 99988526423 (source) and 9993468278 (destination).
+        # * call_id: 70, started at 2016-02-29T12:00:00Z and ended at 2016-02-29T14:00:00Z.
+        # * call_id: 71, started at 2017-12-12T15:07:13Z and ended at 2017-12-12T15:14:56Z.
+        # * call_id: 72, started at 2017-12-12T22:47:56Z and ended at 2017-12-12T22:50:56Z.
+        # * call_id: 73, started at 2017-12-12T21:57:13Z and ended at 2017-12-12T22:10:56Z.
+        # * call_id: 74, started at 2017-12-12T04:57:13Z and ended at 2017-12-12T06:10:56Z.
+        # * call_id: 75, started at 2017-12-12T21:57:13Z and ended at 2017-12-13T22:10:56Z.
+        # * call_id: 76, started at 2017-12-12T15:07:58Z and ended at 2017-12-12T15:12:56Z.
+        # * call_id: 77, started at 2018-02-28T21:57:13Z and ended at 2018-03-01T22:10:56Z.
+        start_payloads = (
+            {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2016-02-29T12:00:00Z",
+                'call_id': "70"
+            }, {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2017-12-12T15:07:13Z",
+                'call_id': "71"
+            }, {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2017-12-12T22:47:56Z",
+                'call_id': "72"
+            }, {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2017-12-12T21:57:13Z",
+                'call_id': "73"
+            }, {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2017-12-12T04:57:13Z",
+                'call_id': "74"
+            }, {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2017-12-12T21:57:13Z",
+                'call_id': "75"
+            }, {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2017-12-12T15:07:58Z",
+                'call_id': "76"
+            }, {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2018-02-28T21:57:13Z",
+                'call_id': "77"
+            },
+        )
+        end_payloads = (
+            {
+                'type': "end",
+                'end': "2016-02-29T14:00:00Z",
+                'call_id': "70"
+            }, {
+                'type': "end",
+                'end': "2017-12-12T15:14:56Z",
+                'call_id': "71"
+            }, {
+                'type': "end",
+                'end': "2017-12-12T22:50:56Z",
+                'call_id': "72"
+            }, {
+                'type': "end",
+                'end': "2017-12-12T22:10:56Z",
+                'call_id': "73"
+            }, {
+                'type': "end",
+                'end': "2017-12-12T06:10:56Z",
+                'call_id': "74"
+            }, {
+                'type': "end",
+                'end': "2017-12-13T22:10:56Z",
+                'call_id': "75"
+            }, {
+                'type': "end",
+                'end': "2017-12-12T15:12:56Z",
+                'call_id': "76"
+            }, {
+                'type': "end",
+                'end': "2018-03-01T22:10:56Z",
+                'call_id': "77"
+            },
+        )
+
+        for payload in start_payloads:
+            print('passed here start')
+            print(payload)
+            response = client.post(
+                reverse('get_post_calls'),
+                data=json.dumps(payload),
+                content_type='application/json'
+            )
+            self.assertEqual(response.status_code,
+                             status.HTTP_201_CREATED, "Failed Payload: {}".format(payload))
+
+        for payload in end_payloads:
+            print('passed here end')
+            print(payload)
+            response = client.post(
+                reverse('get_post_calls'),
+                data=json.dumps(payload),
+                content_type='application/json'
+            )
+            self.assertEqual(response.status_code,
+                             status.HTTP_201_CREATED, "Failed Payload: {}".format(payload))
+
+    def test_sanity(self):
+        assertEqual(1, 2)
+
+    def NOTtest_single_call_account(self):
+        response = client.get(reverse('get_bills'))
+        assertEqual(1, 2)
