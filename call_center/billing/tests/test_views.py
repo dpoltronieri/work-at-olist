@@ -198,6 +198,8 @@ class GetBillTest(TestCase):
         # * call_id: 75, started at 2017-12-12T21:57:13Z and ended at 2017-12-13T22:10:56Z.
         # * call_id: 76, started at 2017-12-12T15:07:58Z and ended at 2017-12-12T15:12:56Z.
         # * call_id: 77, started at 2018-02-28T21:57:13Z and ended at 2018-03-01T22:10:56Z.
+        # the following call was added to test the last closed period
+        # * call_id: 78, started at 2018-07-12T15:07:58Z and ended at 2018-07-12T15:12:56Z.
         start_payloads = (
             {
                 'type': "start",
@@ -247,6 +249,12 @@ class GetBillTest(TestCase):
                 'destination': "9993468278",
                 'start': "2018-02-28T21:57:13Z",
                 'call_id': "77"
+            }, {
+                'type': "start",
+                'source': "99988526423",
+                'destination': "9993468278",
+                'start': "2018-07-12T15:07:58Z",
+                'call_id': "78"
             },
         )
         end_payloads = (
@@ -282,6 +290,10 @@ class GetBillTest(TestCase):
                 'type': "end",
                 'end': "2018-03-01T22:10:56Z",
                 'call_id': "77"
+            }, {
+                'type': "end",
+                'end': "2018-07-12T15:12:56Z",
+                'call_id': "78"
             },
         )
 
@@ -319,7 +331,7 @@ class GetBillTest(TestCase):
         self.assertEqual(response.data, serializer.data)
 
     def test_multiple_call_account(self):
-        # Ask the server for the february 2016 bill
+        # Ask the server for the december 2017 bill
         response = client.get(
             reverse('get_period_bills',
                     kwargs={'source': '99988526423',
@@ -329,6 +341,18 @@ class GetBillTest(TestCase):
         # compare with the one stored in the database
         calls = Call.objects.filter(source='99988526423').filter(
             end__year=2017).filter(end__month=12)
+        serializer = BillSerializer(calls, many=True)
+
+        self.assertEqual(response.data, serializer.data)
+
+    def test_last_closed_period_account(self):
+        response = client.get(
+            reverse('get_period_bills',
+                    kwargs={'source': '99988526423'}))
+
+        # compare with the one stored in the database
+        calls = Call.objects.filter(source='99988526423').filter(
+            end__year=datetime.now(tz=None).year).filter(end__month=(datetime.now(tz=None).month + 11) % 12)
         serializer = BillSerializer(calls, many=True)
 
         self.assertEqual(response.data, serializer.data)
