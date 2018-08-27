@@ -71,3 +71,11 @@ class get_period_bills(APIView):
             end__year=year).filter(end__month=month)
         serializer = BillSerializer(calls, many=True)
         return Response(serializer.data)
+
+# class get_last_period_bills(APIView):
+#
+#     def get(self, request, source, format=None):
+#         calls = Call.objects.filter(source=source).filter(
+#             end__year=year).filter(end__month=month)
+#         serializer = BillSerializer(calls, many=True)
+#         return Response(serializer.data)

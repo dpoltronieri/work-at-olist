@@ -350,9 +350,10 @@ class GetBillTest(TestCase):
             reverse('get_period_bills',
                     kwargs={'source': '99988526423'}))
 
+        bill_period = datetime.now(tz=None).replace(day=1) - timedelta(days=1)
         # compare with the one stored in the database
         calls = Call.objects.filter(source='99988526423').filter(
-            end__year=datetime.now(tz=None).year).filter(end__month=(datetime.now(tz=None).month + 11) % 12)
+            end__year=bill_period.year).filter(end__month=bill_period.month)
         serializer = BillSerializer(calls, many=True)
 
         self.assertEqual(response.data, serializer.data)
