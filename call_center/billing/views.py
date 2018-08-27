@@ -68,10 +68,13 @@ class get_incomplete_calls(APIView):
 class get_period_bills(APIView):
 
     def get(self, request, source, year, month, format=None):
-        calls = Call.objects.filter(source=source).filter(
-            end__year=year).filter(end__month=month)
-        serializer = BillSerializer(calls, many=True)
-        return Response(serializer.data)
+        if Call.objects.filter(source=source).exists():
+            calls = Call.objects.filter(source=source).filter(
+                end__year=year).filter(end__month=month)
+            serializer = BillSerializer(calls, many=True)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class get_last_period_bills(APIView):
