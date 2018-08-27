@@ -12,7 +12,7 @@ urlpatterns = [
     path('bills/<source>/<int:year>/<int:month>/',
          views.get_period_bills.as_view(), name='get_period_bills'),
     path('bills/<source>/',
-         views.get_period_bills.as_view(), name='get_last_period_bills'),
+         views.get_last_period_bills.as_view(), name='get_last_period_bills'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -347,7 +347,7 @@ class GetBillTest(TestCase):
 
     def test_last_closed_period_account(self):
         response = client.get(
-            reverse('get_period_bills',
+            reverse('get_last_period_bills',
                     kwargs={'source': '99988526423'}))
 
         bill_period = datetime.now(tz=None).replace(day=1) - timedelta(days=1)

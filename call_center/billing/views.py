@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, detail_route
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
+from datetime import timedelta, datetime
 
 from billing.models import Call, Charge
 from billing.serializers import CallSerializer, BillSerializer
@@ -72,10 +73,12 @@ class get_period_bills(APIView):
         serializer = BillSerializer(calls, many=True)
         return Response(serializer.data)
 
-# class get_last_period_bills(APIView):
-#
-#     def get(self, request, source, format=None):
-#         calls = Call.objects.filter(source=source).filter(
-#             end__year=year).filter(end__month=month)
-#         serializer = BillSerializer(calls, many=True)
-#         return Response(serializer.data)
+
+class get_last_period_bills(APIView):
+
+    def get(self, request, source, format=None):
+        bill_period = datetime.now(tz=None).replace(day=1) - timedelta(days=1)
+        calls = Call.objects.filter(source=source).filter(
+            end__year=bill_period.year).filter(end__month=bill_period.month)
+        serializer = BillSerializer(calls, many=True)
+        return Response(serializer.data)
