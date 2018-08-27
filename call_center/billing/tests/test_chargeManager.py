@@ -1,9 +1,9 @@
 from django.test import TestCase
 from datetime import timedelta, datetime
 
-from call_center.chargeManager import chargeManager
+from billing.chargeManager import chargeManager
 from billing.models import Charge
-from billing.serializers import ChargeSerializer
+#from billing.serializers import ChargeSerializer
 
 
 class testChargeManager(TestCase):

@@ -166,7 +166,7 @@ class POSTCallTest(TestCase):
             self.assertEqual(self.end_response.status_code,
                              status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
 
-    def test_billing_10_minutes_no_reduced_tariff(self):
+    def NOTtest_billing_10_minutes_no_reduced_tariff(self):
         self.test_start_end_valid_call()
 
         self.assertEqual(self.end_response.data['billable_minutes'], 10)
