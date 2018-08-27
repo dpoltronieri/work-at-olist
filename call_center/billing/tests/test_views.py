@@ -317,3 +317,18 @@ class GetBillTest(TestCase):
         serializer = BillSerializer(calls, many=True)
 
         self.assertEqual(response.data, serializer.data)
+
+    def test_multiple_call_account(self):
+        # Ask the server for the february 2016 bill
+        response = client.get(
+            reverse('get_period_bills',
+                    kwargs={'source': '99988526423',
+                            'year': '2017',
+                            'month': '12'}))
+
+        # compare with the one stored in the database
+        calls = Call.objects.filter(source='99988526423').filter(
+            end__year=2017).filter(end__month=12)
+        serializer = BillSerializer(calls, many=True)
+
+        self.assertEqual(response.data, serializer.data)
