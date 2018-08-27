@@ -7,7 +7,7 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
 from billing.models import Call, Charge
-from billing.serializers import CallSerializer
+from billing.serializers import CallSerializer, BillSerializer
 from billing.chargeManager import ChargeManager
 
 
@@ -64,7 +64,10 @@ class get_incomplete_calls(APIView):
         return Response(serializer.data)
 
 
-class get_bills(APIView):
+class get_period_bills(APIView):
 
-    def get(self, request, year, month, format=None):
-        return Response({'year': year, 'month': month})
+    def get(self, request, source, year, month, format=None):
+        calls = Call.objects.filter(source=source).filter(
+            end__year=year).filter(end__month=month)
+        serializer = BillSerializer(calls, many=True)
+        return Response(serializer.data)

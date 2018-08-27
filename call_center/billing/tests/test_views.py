@@ -5,7 +5,7 @@ from django.urls import reverse
 from datetime import timedelta, datetime
 
 from billing.models import Call, Charge
-from billing.serializers import CallSerializer
+from billing.serializers import CallSerializer, BillSerializer
 
 # initialize the APIClient app
 client = Client()
@@ -303,12 +303,17 @@ class GetBillTest(TestCase):
             self.assertEqual(response.status_code,
                              status.HTTP_201_CREATED, "Failed Payload: {}".format(payload))
 
-    def test_sanity(self):
-        # print(Call.objects.all())
-        self.assertEqual(1, 1)
-
     def test_single_call_account(self):
+        # Ask the server for the february 2016 bill
         response = client.get(
-            reverse('get_bills', kwargs={'year': '2016', 'month': '02'}))
-        print(response.data)
-        self.assertEqual(1, 2)
+            reverse('get_period_bills',
+                    kwargs={'source': '99988526423',
+                            'year': '2016',
+                            'month': '02'}))
+
+        # compare with the one stored in the database
+        calls = Call.objects.filter(source='99988526423').filter(
+            end__year=2016).filter(end__month=2)
+        serializer = BillSerializer(calls, many=True)
+
+        self.assertEqual(response.data, serializer.data)
