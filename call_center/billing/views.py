@@ -62,3 +62,9 @@ class get_incomplete_calls(APIView):
         calls = Call.objects.all().filter(end=None)
         serializer = CallSerializer(calls, many=True)
         return Response(serializer.data)
+
+
+class get_bills(APIView):
+
+    def get(self, request, year, month, format=None):
+        return Response({'year': year, 'month': month})

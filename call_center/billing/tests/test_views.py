@@ -286,8 +286,6 @@ class GetBillTest(TestCase):
         )
 
         for payload in start_payloads:
-            print('passed here start')
-            print(payload)
             response = client.post(
                 reverse('get_post_calls'),
                 data=json.dumps(payload),
@@ -297,8 +295,6 @@ class GetBillTest(TestCase):
                              status.HTTP_201_CREATED, "Failed Payload: {}".format(payload))
 
         for payload in end_payloads:
-            print('passed here end')
-            print(payload)
             response = client.post(
                 reverse('get_post_calls'),
                 data=json.dumps(payload),
@@ -308,8 +304,11 @@ class GetBillTest(TestCase):
                              status.HTTP_201_CREATED, "Failed Payload: {}".format(payload))
 
     def test_sanity(self):
-        self.assertEqual(1, 2)
+        # print(Call.objects.all())
+        self.assertEqual(1, 1)
 
-    def NOTtest_single_call_account(self):
-        response = client.get(reverse('get_bills'))
-        assertEqual(1, 2)
+    def test_single_call_account(self):
+        response = client.get(
+            reverse('get_bills', kwargs={'year': '2016', 'month': '02'}))
+        print(response.data)
+        self.assertEqual(1, 2)
