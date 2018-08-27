@@ -315,7 +315,7 @@ class GetBillTest(TestCase):
             self.assertEqual(response.status_code,
                              status.HTTP_201_CREATED, "Failed Payload: {}".format(payload))
 
-    def test_single_call_account(self):
+    def test_single_call_bill(self):
         # Ask the server for the february 2016 bill
         response = client.get(
             reverse('get_period_bills',
@@ -330,7 +330,7 @@ class GetBillTest(TestCase):
 
         self.assertEqual(response.data, serializer.data)
 
-    def test_multiple_call_account(self):
+    def test_multiple_call_bill(self):
         # Ask the server for the december 2017 bill
         response = client.get(
             reverse('get_period_bills',
@@ -345,7 +345,7 @@ class GetBillTest(TestCase):
 
         self.assertEqual(response.data, serializer.data)
 
-    def test_last_closed_period_account(self):
+    def test_last_closed_period_bill(self):
         response = client.get(
             reverse('get_last_period_bills',
                     kwargs={'source': '99988526423'}))
@@ -357,3 +357,20 @@ class GetBillTest(TestCase):
         serializer = BillSerializer(calls, many=True)
 
         self.assertEqual(response.data, serializer.data)
+
+    def test_invalid_period_bill(self):
+        # Ask the server for the december 2017 bill
+        response = client.get(
+            reverse('get_period_bills',
+                    kwargs={'source': '12345',
+                            'year': '2017',
+                            'month': '12'}))
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_last_closed_period_bill(self):
+        response = client.get(
+            reverse('get_last_period_bills',
+                    kwargs={'source': '12345'}))
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

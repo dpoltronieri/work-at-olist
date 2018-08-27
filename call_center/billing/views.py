@@ -77,8 +77,12 @@ class get_period_bills(APIView):
 class get_last_period_bills(APIView):
 
     def get(self, request, source, format=None):
-        bill_period = datetime.now(tz=None).replace(day=1) - timedelta(days=1)
-        calls = Call.objects.filter(source=source).filter(
-            end__year=bill_period.year).filter(end__month=bill_period.month)
-        serializer = BillSerializer(calls, many=True)
-        return Response(serializer.data)
+        if Call.objects.filter(source=source).exists():
+            bill_period = datetime.now(tz=None).replace(
+                day=1) - timedelta(days=1)
+            calls = Call.objects.filter(source=source).filter(
+                end__year=bill_period.year).filter(end__month=bill_period.month)
+            serializer = BillSerializer(calls, many=True)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
