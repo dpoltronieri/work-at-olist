@@ -13,7 +13,7 @@ All the tests are handled by the Django Unit Test Module, no test was done with 
 
 ## Database
 
-The database used was the default Django Models. Two models were implemented [here](Docs/Database)
+The database used was the default Django Models. Two models were implemented [here](Docs/Database.md)
 A manager class was used to keep the database and views code DRY, [here](Docs/chargeManager.py.md).
 
 ## Deployment
