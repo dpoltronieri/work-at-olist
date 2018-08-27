@@ -182,6 +182,12 @@ class POSTCallTest(TestCase):
 class GetBillTest(TestCase):
 
     def setUp(self):
+        Charge.objects.create(
+            standing_charge=0.36,
+            minute_charge=0.09,
+            reduced_tariff_start=22,
+            reduced_tariff_end=6
+        )
         # From the challenge specification
         # These calls are between the numbers 99988526423 (source) and 9993468278 (destination).
         # * call_id: 70, started at 2016-02-29T12:00:00Z and ended at 2016-02-29T14:00:00Z.
@@ -302,7 +308,7 @@ class GetBillTest(TestCase):
                              status.HTTP_201_CREATED, "Failed Payload: {}".format(payload))
 
     def test_sanity(self):
-        assertEqual(1, 2)
+        self.assertEqual(1, 2)
 
     def NOTtest_single_call_account(self):
         response = client.get(reverse('get_bills'))
