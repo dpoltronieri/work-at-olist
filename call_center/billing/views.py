@@ -6,8 +6,9 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
-from billing.models import Call
+from billing.models import Call, Charge
 from billing.serializers import CallSerializer
+from billing.chargeManager import ChargeManager
 
 
 class get_post_calls(APIView):
@@ -43,6 +44,8 @@ class get_post_calls(APIView):
                 running_call, data=request.data, partial=True)
 
             if serializer.is_valid():
+                serializer.validated_data['call_price'] = ChargeManager.getCharge(
+                    running_call.start, serializer.initial_data['end'])
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

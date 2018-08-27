@@ -16,14 +16,16 @@ class Call(models.Model):
     source = models.CharField(max_length=20)
     destination = models.CharField(max_length=20)
     call_id = models.BigIntegerField(primary_key=True, unique=True)
+    call_price = models.FloatField(null=True)
 
     def __str__(self):
-        return "call_id: {},start: {},end: {},source: {},destination: {}".format(
+        return "call_id: {},start: {},end: {},source: {},destination: {}, call_price: {}".format(
             self.call_id,
             self.start,
             self.end,
             self.source,
-            self.destination)
+            self.destination,
+            self.call_price)
 
 
 class Charge(models.Model):

@@ -4,7 +4,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from datetime import timedelta, datetime
 
-from billing.models import Call
+from billing.models import Call, Charge
 from billing.serializers import CallSerializer
 
 # initialize the APIClient app
@@ -56,6 +56,13 @@ class POSTCallTest(TestCase):
     """
 
     def setUp(self):
+        Charge.objects.create(
+            standing_charge=0.36,
+            minute_charge=0.09,
+            reduced_tariff_start=22,
+            reduced_tariff_end=6
+        )
+
         self.end_response = ""
         self.start_response = ""
         # IDEA: multiple valid start and end payloads
@@ -166,9 +173,7 @@ class POSTCallTest(TestCase):
             self.assertEqual(self.end_response.status_code,
                              status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
 
-    def NOTtest_billing_10_minutes_no_reduced_tariff(self):
+    def test_billing_10_minutes_no_reduced_tariff(self):
         self.test_start_end_valid_call()
 
-        self.assertEqual(self.end_response.data['billable_minutes'], 10)
-        self.assertEqual(self.end_response.data['call_price'], 1.26)
-        print(self.end_response.data)
+        self.assertEqual(self.end_response.data['call_price'], 1.25)
