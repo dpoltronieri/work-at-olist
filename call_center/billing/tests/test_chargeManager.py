@@ -1,12 +1,21 @@
 from django.test import TestCase
 from datetime import timedelta, datetime
 
-from billing.chargeManager import chargeManager
+from billing.chargeManager import ChargeManager
 from billing.models import Charge
 #from billing.serializers import ChargeSerializer
 
 
 class testChargeManager(TestCase):
+
+    def setUp(self):
+        Charge.objects.create(
+            standing_charge=0.36,
+            minute_charge=0.09,
+            reduced_tariff_start=22,
+            reduced_tariff_end=6
+        )
+        print(Charge.objects.latest('enforced').standing_charge)
 
     # standingCharge = 0.36
     # minuteCharge = 0.09
@@ -17,17 +26,17 @@ class testChargeManager(TestCase):
 
     def test_same_day_normal_call(self):
 
-        testTime1 = datetime.datetime(
+        testTime1 = datetime(
             year=2018, month=2, day=5,
-            hour=Charge.objects.latest('enforced')['reducedTariffEnd'], minute=10)
-        testTime2 = datetime.datetime(
+            hour=Charge.objects.latest('enforced').reduced_tariff_end, minute=10)
+        testTime2 = datetime(
             year=2018, month=2, day=5,
-            hour=Charge.objects.latest('enforced')['reducedTariffEnd'], minute=20)
-        testCharge = chargeManager.getCharge(testTime1, testTime2)
+            hour=Charge.objects.latest('enforced').reduced_tariff_end, minute=20)
+        testCharge = ChargeManager.getCharge(testTime1, testTime2)
 
         expectedCharge = int(
-            (Charge.objects.latest('enforced')['standingCharge']
-             + Charge.objects.latest('enforced')['minuteCharge'] * 10)
+            (Charge.objects.latest('enforced').standing_charge
+             + Charge.objects.latest('enforced').minute_charge * 10)
             * 100) / 100
         self.assertEqual(testCharge, expectedCharge)
 

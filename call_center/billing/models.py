@@ -24,3 +24,20 @@ class Call(models.Model):
             self.end,
             self.source,
             self.destination)
+
+
+class Charge(models.Model):
+    standing_charge = models.FloatField()
+    minute_charge = models.FloatField()
+    reduced_tariff_start = models.DecimalField(max_digits=2, decimal_places=0)
+    reduced_tariff_end = models.DecimalField(max_digits=2, decimal_places=0)
+    enforced = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return "standing_charge: {},minute_charge: {},reduced_tariff_start: {},reduced_tariff_end: {},enforced: {}".format(
+            self.standing_charge,
+            self.minute_charge,
+            self.reduced_tariff_start,
+            self.reduced_tariff_end,
+            self.enforced
+        )
