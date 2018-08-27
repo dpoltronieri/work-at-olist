@@ -358,12 +358,22 @@ class GetBillTest(TestCase):
 
         self.assertEqual(response.data, serializer.data)
 
-    def test_invalid_period_bill(self):
+    def test_invalid_number_period_bill(self):
         # Ask the server for the december 2017 bill
         response = client.get(
             reverse('get_period_bills',
                     kwargs={'source': '12345',
                             'year': '2017',
+                            'month': '12'}))
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_date_period_bill(self):
+        # Ask the server for the december 2017 bill
+        response = client.get(
+            reverse('get_period_bills',
+                    kwargs={'source': '99988526423',
+                            'year': '2030',
                             'month': '12'}))
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
