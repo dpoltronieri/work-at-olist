@@ -7,6 +7,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
     path('calls/', views.get_post_calls.as_view(), name='get_post_calls'),
+    path('charges/', views.get_post_charges.as_view(), name='get_post_charges'),
     path('incomplete_calls/', views.get_incomplete_calls.as_view(),
          name='get_incomplete_calls'),
     path('bills/<source>/<int:year>/<int:month>/',

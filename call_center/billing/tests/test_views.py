@@ -515,16 +515,16 @@ class POSTCallTest(TestCase):
         self.assertEqual(self.end_response.data['call_price'], 1.25)
 
 
-class GetBillTest(TestCase):
+class POSTChargeTest(TestCase):
 
     def setUp(self):
-        payload = {
+        self.payload = {
             'standing_charge': "0.36",
             'minute_charge': "0.09",
             'reduced_tariff_start': "22",
             'reduced_tariff_end': "6"
         }
-        invalid_payloads = (
+        self.invalid_payloads = (
             {
                 'minute_charge': "0.09",
                 'reduced_tariff_start': "22",
@@ -547,18 +547,18 @@ class GetBillTest(TestCase):
     def test_start_valid_charge(self):
         start_response = client.post(
             reverse('get_post_charges'),
-            data=json.dumps(payload),
+            data=json.dumps(self.payload),
             content_type='application/json'
         )
-        self.assertEqual(self.start_response.status_code,
+        self.assertEqual(start_response.status_code,
                          status.HTTP_201_CREATED)
 
     def test_start_invalid_charge(self):
-        for payload in invalid_start_payloads:
-            self.start_response = client.post(
+        for payload in self.invalid_payloads:
+            start_response = client.post(
                 reverse('get_post_charges'),
                 data=json.dumps(payload),
                 content_type='application/json'
             )
-            self.assertEqual(self.start_response.status_code,
+            self.assertEqual(start_response.status_code,
                              status.HTTP_400_BAD_REQUEST, "Failed Payload: {}".format(payload))
