@@ -16,6 +16,7 @@ All the tests are handled by the Django Unit Test Module, no test was done with 
 The database used was the default SQLite. Two models were implemented [here](Docs/Database.md)
 A manager class was used to keep the database and views code DRY, [here](Docs/chargeManager.py.md).
 The SQLite database prevents the app of being deployed to heroku, so pythonanywhere was used.
+To populate the database a [**Bash**](Docs/populate.sh) script can be used.
 
 ## Deployment
 

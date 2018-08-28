@@ -94,16 +94,17 @@ class get_last_period_bills(APIView):
 
 class get_post_charges(APIView):
     """
-    List all calls, or create a new call.
+    List the most recent charge, or create a new charge.
     """
 
     def get(self, request, format=None):
         charge = Charge.objects.latest('enforced')
-        serializer = ChargeSerializer(charges)
+        serializer = ChargeSerializer(charge)
         return Response(serializer.data)
 
     def post(self, request, format=None):
         serializer = ChargeSerializer(data=request.data)
+        print(serializer.initial_data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
