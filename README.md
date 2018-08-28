@@ -21,7 +21,8 @@ To populate the database a [**Bash**](Docs/populate.sh) script can be used.
 ## Deployment
 
 The server was deployed on pythonanywhere.com under the base url [http://dpoltronieri.pythonanywhere.com](http://dpoltronieri.pythonanywhere.com).
-The *Debug = True* flag as a concious choice to facilitate the testing of this code in the evaluation round.
+
+The *Debug = True* flag was a concious choice to facilitate the testing of this code in the evaluation round.
 
 ## Usage
 
