@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SERVER=http://127.0.0.1:8000
+SERVER=http://dpoltronieri.pythonanywhere.com/
 
 curl -d '{"standing_charge": "0.36","minute_charge": "0.09","reduced_tariff_start": "22","reduced_tariff_end": "6"}' -H "Content-Type: application/json" -X POST $SERVER/charges/
 

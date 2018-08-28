@@ -42,3 +42,8 @@ The path urls are:
 * bills/<string:source>/
   * **GET**: Gets a list of the destination, time of start and finish of the calls and price for each individual call on the last closed period.
     * *Source*: The number of the bill
+
+## Possible Improvements
+* The calls/ path has two operations on the post, and the end of call could be put in a PUT method.
+* The database used was SQLite, now in hinshight, I could have gone with PostgressSQL to a smoother deploy on heroku.
+* The ChargeManager algorithm could use an efficiency inprovement
